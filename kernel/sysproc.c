@@ -89,3 +89,117 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+uint64
+sys_lcg_srand(void)
+{
+  int seed;
+
+  argint(0, &seed);
+  lcg_srand((uint)seed);
+  return 0;
+}
+
+uint64
+sys_lcg_rand(void)
+{
+  return lcg_rand();
+}
+
+uint64
+sys_setgid(void)
+{
+  int gid;
+  struct proc *p = myproc();
+
+  argint(0, &gid);
+  acquire(&p->lock);
+  p->gid = gid;
+  release(&p->lock);
+  return 0;
+}
+
+uint64
+sys_getgid(void)
+{
+  int gid;
+  struct proc *p = myproc();
+
+  acquire(&p->lock);
+  gid = p->gid;
+  release(&p->lock);
+  return gid;
+}
+
+uint64
+sys_israeli_create(void)
+{
+  int favoritism;
+
+  argint(0, &favoritism);
+  return israeli_create(favoritism);
+}
+
+uint64
+sys_israeli_acquire(void)
+{
+  int lock_id;
+
+  argint(0, &lock_id);
+  return israeli_acquire(lock_id);
+}
+
+uint64
+sys_israeli_release(void)
+{
+  int lock_id;
+
+  argint(0, &lock_id);
+  return israeli_release(lock_id);
+}
+
+uint64
+sys_israeli_destroy(void)
+{
+  int lock_id;
+
+  argint(0, &lock_id);
+  return israeli_destroy(lock_id);
+}
+
+uint64
+sys_relay_init(void)
+{
+  int teams;
+  int target;
+
+  argint(0, &teams);
+  argint(1, &target);
+  return relay_init(teams, target);
+}
+
+uint64
+sys_relay_score_inc(void)
+{
+  int team;
+
+  argint(0, &team);
+  return relay_score_inc(team);
+}
+
+uint64
+sys_relay_winner(void)
+{
+  return relay_winner();
+}
+
+uint64
+sys_relay_get_scores(void)
+{
+  uint64 dst;
+  int max;
+
+  argaddr(0, &dst);
+  argint(1, &max);
+  return relay_get_scores(dst, max);
+}

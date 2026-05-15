@@ -118,6 +118,25 @@ void            release(struct spinlock*);
 void            push_off(void);
 void            pop_off(void);
 
+// rand.c
+void            randinit(void);
+void            lcg_srand(uint);
+uint            lcg_rand(void);
+
+// relay.c
+void            relay_system_init(void);
+int             relay_init(int, int);
+int             relay_score_inc(int);
+int             relay_winner(void);
+int             relay_get_scores(uint64, int);
+
+// israeli_lock.c
+void            israeli_init(void);
+int             israeli_create(int);
+int             israeli_acquire(int);
+int             israeli_release(int);
+int             israeli_destroy(int);
+
 // sleeplock.c
 void            acquiresleep(struct sleeplock*);
 void            releasesleep(struct sleeplock*);

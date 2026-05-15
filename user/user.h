@@ -22,6 +22,18 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+void lcg_srand(uint);
+uint lcg_rand(void);
+int setgid(int);
+int getgid(void);
+int israeli_create(int);
+int israeli_acquire(int);
+int israeli_release(int);
+int israeli_destroy(int);
+int relay_init(int, int);
+int relay_score_inc(int);
+int relay_winner(void);
+int relay_get_scores(int *, int);
 
 // ulib.c
 int stat(const char*, struct stat*);

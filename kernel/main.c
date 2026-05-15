@@ -16,6 +16,9 @@ main()
     printf("\n");
     printf("xv6 kernel is booting\n");
     printf("\n");
+    randinit();     // random generator state
+    israeli_init(); // Israeli lock state
+    relay_system_init(); // relay score state
     kinit();         // physical page allocator
     kvminit();       // create kernel page table
     kvminithart();   // turn on paging

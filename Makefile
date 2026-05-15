@@ -9,6 +9,9 @@ OBJS = \
   $K/uart.o \
   $K/kalloc.o \
   $K/spinlock.o \
+	$K/rand.o \
+	$K/israeli_lock.o \
+	$K/relay.o \
   $K/string.o \
   $K/main.o \
   $K/vm.o \
@@ -132,6 +135,9 @@ UPROGS=\
 	$U/_grind\
 	$U/_wc\
 	$U/_zombie\
+	$U/_ass2test\
+	$U/_israeli_test\
+	$U/_relay_race\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
