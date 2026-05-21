@@ -6,7 +6,7 @@
 #include "defs.h"
 
 #define MAX_ISRAELI_LOCKS 15
-#define MAX_WAITING_PROCS NPROC
+#define MAX_WAITING_PROCS 16
 
 struct israeli_lock
 {
@@ -28,7 +28,8 @@ valid_lock_id(int lock_id)
     return lock_id >= 0 && lock_id < MAX_ISRAELI_LOCKS;
 }
 
-// helper function to find the index of the first process in the lock's queue with the same gid as the releaser, returns index if found, -1 if not found
+// helper function to find the index of the first process in the lock's queue with the same gid as the releaser,
+// returns index if found, -1 if not found
 static int
 find_same_gid_index(struct israeli_lock *lk, int gid)
 {
@@ -42,6 +43,12 @@ find_same_gid_index(struct israeli_lock *lk, int gid)
         }
     }
     return -1;
+}
+
+// helper function to check if favoritism is valid, returns 1 if valid, 0 if not
+static int valid_favoritism(int favoritism)
+{
+    return favoritism >= 0 && favoritism <= 100;
 }
 
 // initialize the israeli locks
@@ -65,7 +72,7 @@ int israeli_create(int favoritism)
 {
     int i;
 
-    if (favoritism < 0 || favoritism > 100)
+    if (!valid_favoritism(favoritism))
     {
         return -1;
     }
@@ -91,6 +98,7 @@ int israeli_create(int favoritism)
     return -1;
 }
 
+// acquire the israeli lock with the given lock_id, returns 0 if successful, -1 if error
 int israeli_acquire(int lock_id)
 {
     struct israeli_lock *lk;
@@ -104,6 +112,7 @@ int israeli_acquire(int lock_id)
 
     lk = &israeli_locks[lock_id];
     acquire(&lk->lock);
+    // Safety check: An inactive lock means it has not been created or has been destroyed.
     if (!lk->active)
     {
         release(&lk->lock);
@@ -118,39 +127,38 @@ int israeli_acquire(int lock_id)
         return 0;
     }
 
-    for (i = 0; i < lk->q_size; i++)
-    {
-        if (lk->queue[i] == p)
-        {
+    for (i = 0; i < lk->q_size; i++) {
+        if (lk->queue[i] == p) {
             goto wait_for_lock;
         }
     }
 
-    if (lk->q_size >= MAX_WAITING_PROCS)
-    {
+    if (lk->q_size >= MAX_WAITING_PROCS) {
         release(&lk->lock);
         return -1;
     }
 
+    // Assign the current process to the end of the waiting queue,
+    // then increment the queue size
     lk->queue[lk->q_size++] = p;
 
-wait_for_lock:
-    for (;;)
-    {
+    wait_for_lock:
+    for (;;) {
         sleep(lk, &lk->lock);
-        if (!lk->active)
-        {
+        if (!lk->active) {
             release(&lk->lock);
             return -1;
         }
-        if (lk->held && lk->owner_pid == p->pid)
-        {
+        if (lk->held && lk->owner_pid == p->pid) {
             release(&lk->lock);
             return 0;
         }
     }
 }
 
+// release the israeli lock with the given lock_id, returns 0 if successful, -1 if error
+// Only the owner can release the lock. If there are waiting processes, the next owner is selected (with favoritism if set).
+// Wakes up waiting processes as needed.
 int israeli_release(int lock_id)
 {
     struct israeli_lock *lk;
@@ -165,12 +173,13 @@ int israeli_release(int lock_id)
 
     lk = &israeli_locks[lock_id];
     acquire(&lk->lock);
-    // only the owner can release the lock, and the lock must be active and held --- IGNORE ---
+    // only the owner can release the lock, and the lock must be active and held
     if (!lk->active || !lk->held || lk->owner_pid != p->pid)
     {
         release(&lk->lock);
         return -1;
     }
+
     // if there are no waiting processes, simply release the lock
     if (lk->q_size == 0)
     {
@@ -180,11 +189,13 @@ int israeli_release(int lock_id)
         release(&lk->lock);
         return 0;
     }
+
     // if there are waiting processes, select the next owner based on the favoritism and group IDs of the waiting processes
     if (lk->favoritism > 0)
     {
         int same_gid_index = find_same_gid_index(lk, p->gid);
-        // if there is a process with the same gid as the releaser, select it as the next owner with probability equal to the favoritism percentage
+        // if there is a process with the same gid as the releaser,
+        // select it as the next owner with probability equal to the favoritism percentage
         if (same_gid_index >= 0)
         {
             uint r = lcg_rand() % 100;
