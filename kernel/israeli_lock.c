@@ -225,8 +225,9 @@ int israeli_destroy(int lock_id)
     // only a non-waiting owner can destroy the lock, and the lock must be active
     lk = &israeli_locks[lock_id];
     acquire(&lk->lock);
-    // if the lock is held by another process, or if there are waiting processes, or if the lock is not active, return an error
-    if (!lk->active)
+    // Return an error if the lock is inactive, currently held,
+    // or has processes waiting in its queue.
+    if (!lk->active || lk->held || lk->q_size > 0)
     {
         release(&lk->lock);
         return -1;
@@ -236,7 +237,7 @@ int israeli_destroy(int lock_id)
     lk->held = 0;
     lk->owner_pid = 0;
     lk->q_size = 0;
-    wakeup(lk);
+
     release(&lk->lock);
     return 0;
 }
