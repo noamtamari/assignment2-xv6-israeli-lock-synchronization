@@ -14,15 +14,32 @@ int main(void)
     for (int i = 0; i < NPROC; i++)
     {
         int pid = fork();
+
+        if (pid < 0)
+        {
+            printf("israeli_test: fork failed\n");
+            israeli_destroy(lock_id);
+            exit(1);
+        }
+
         if (pid == 0)
         {
             int gid = lcg_rand() % GROUPS; // assign a random group ID to each process
             setgid(gid);
-            israeli_acquire(lock_id);
+
+            if (israeli_acquire(lock_id) < 0)
+            {
+                printf("Process %d failed to acquire lock\n", getpid());
+                exit(1);
+            }
             printf("Process %d (gid=%d) acquired the lock\n",
                    getpid(), getgid());
             sleep(10);
-            israeli_release(lock_id);
+            if (israeli_release(lock_id) < 0)
+            {
+                printf("Process %d failed to release lock\n", getpid());
+                exit(1);
+            }
             exit(0);
         }
     }

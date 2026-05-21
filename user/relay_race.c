@@ -62,6 +62,13 @@ main(int argc, char *argv[])
   total = teams * runners;
   for(int i = 0; i < total; i++){
     int pid = fork();
+
+    if(pid < 0){
+      printf("relay_race: fork failed\n");
+      israeli_destroy(lock_id);
+      exit(1);
+    }
+
     if(pid == 0){
       int team = i % teams;
       setgid(team);
