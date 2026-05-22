@@ -42,7 +42,7 @@ main(int argc, char *argv[])
   }
 
   if(favoritism < 0 || favoritism > 100 || teams <= 0 || teams > MAX_TEAMS ||
-     runners <= 0 || target <= 0){
+    runners <= 0 || target <= 0){
     usage();
     exit(1);
   }

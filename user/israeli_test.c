@@ -2,7 +2,7 @@
 #include "kernel/stat.h"
 #include "user/user.h"
 
-#define NPROC 15
+#define NPROC 16
 #define GROUPS 4
 
 int main(void)

@@ -17,6 +17,7 @@ struct relay_state {
 
 static struct relay_state relay;
 
+// Initialize the relay state and scores.
 void
 relay_system_init(void)
 {
@@ -31,6 +32,7 @@ relay_system_init(void)
   }
 }
 
+// Set up a new relay race with the given number of teams and target score.
 int
 relay_init(int teams, int target)
 {
@@ -51,6 +53,8 @@ relay_init(int teams, int target)
   return 0;
 }
 
+// Increment the score for the given team.
+// Returns new score or -1 on error.
 int
 relay_score_inc(int team)
 {
@@ -63,6 +67,7 @@ relay_score_inc(int team)
   }
 
   score = ++relay.scores[team];
+  // no team has won yet and this team has reached the target score
   if(relay.winner < 0 && score >= relay.target){
     relay.winner = team;
   }
@@ -70,6 +75,7 @@ relay_score_inc(int team)
   return score;
 }
 
+// Return the index of the winning team, or -1 if no winner yet.
 int
 relay_winner(void)
 {
@@ -81,6 +87,10 @@ relay_winner(void)
   return winner;
 }
 
+// Copy the current scores to a user buffer.
+// dst: user-space address to copy scores to
+// max: maximum number of scores to copy (user buffer size)
+// Returns the number of scores copied, or -1 on error.
 int
 relay_get_scores(uint64 dst, int max)
 {
@@ -95,6 +105,9 @@ relay_get_scores(uint64 dst, int max)
   }
 
   n = relay.teams;
+  // Defensive: Only copy as many scores as the user-requested maximum (max),
+  // since the kernel cannot know the actual buffer size. This prevents overflow
+  // if the user provides a buffer smaller than the number of teams.
   if(n > max){
     n = max;
   }
