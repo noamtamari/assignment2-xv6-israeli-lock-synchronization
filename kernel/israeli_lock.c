@@ -144,7 +144,7 @@ int israeli_acquire(int lock_id)
 
     wait_for_lock:
     for (;;) {
-        sleep(lk, &lk->lock);
+        sleep(p, &lk->lock); // sleep on the process's own address
         if (!lk->active) {
             release(&lk->lock);
             return -1;
@@ -217,9 +217,9 @@ int israeli_release(int lock_id)
         lk->q_size--;
         lk->owner_pid = next->pid;
         lk->held = 1;
+        // wake up only the next owner
+        wakeup(next);
     }
-    // wake up the next owner and release the lock
-    wakeup(lk); 
     release(&lk->lock);
     return 0;
 }
