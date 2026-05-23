@@ -94,7 +94,6 @@ israeli_acquire(int lock_id)
 {
     struct israeli_lock *lk;
     struct proc *p = myproc();
-    int i;
     if (!valid_lock_id(lock_id)) {
         return -1;
     }
@@ -111,11 +110,7 @@ israeli_acquire(int lock_id)
         release(&lk->lock);
         return 0;
     }
-    for (i = 0; i < lk->q_size; i++) {
-        if (lk->queue[i] == p) {
-            goto wait_for_lock;
-        }
-    }
+
     if (lk->q_size >= MAX_WAITING_PROCS) {
         release(&lk->lock);
         return -1;
@@ -123,7 +118,6 @@ israeli_acquire(int lock_id)
     // Assign the current process to the end of the waiting queue,
     // then increment the queue size
     lk->queue[lk->q_size++] = p;
-wait_for_lock:
     for (;;) {
         sleep(p, &lk->lock); // sleep on the process's own address
         if (!lk->active) {

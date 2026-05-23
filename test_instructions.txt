@@ -1,0 +1,21 @@
+Test run instructions
+
+1) Build and run xv6 in QEMU:
+   make qemu
+
+   If you prefer a non-graphics console:
+   make qemu-nox
+
+2) At the xv6 shell prompt, run the tests:
+   ass2test
+   israeli_test
+   relay_race
+
+3) relay_race optional arguments:
+   relay_race [favoritism] [teams] [runners] [target]
+
+   Example:
+   relay_race 50 3 5 30
+
+4) Exit QEMU:
+   Press Ctrl+a then x (if using qemu-nox, still Ctrl+a then x).
