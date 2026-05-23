@@ -8,6 +8,18 @@
 #define DEFAULT_TARGET 30
 #define MAX_TEAMS 16
 
+// Fisher-Yates shuffle for team assignments
+static void
+shuffle_teams(int *arr, int n, int seed) {
+  lcg_srand(seed);
+  for (int i = n - 1; i > 0; i--) {
+    int j = lcg_rand() % (i + 1);
+    int tmp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = tmp;
+  }
+}
+
 static void
 usage(void)
 {
@@ -60,6 +72,15 @@ main(int argc, char *argv[])
   }
 
   total = teams * runners;
+  int team_assignments[total];
+  // Fill team_assignments with balanced teams
+  for (int r = 0, idx = 0; r < runners; r++) {
+    for (int t = 0; t < teams; t++, idx++) {
+      team_assignments[idx] = t;
+    }
+  }
+  // Shuffle the team assignments
+  shuffle_teams(team_assignments, total, favoritism);
   for(int i = 0; i < total; i++){
     int pid = fork();
 
@@ -70,7 +91,7 @@ main(int argc, char *argv[])
     }
 
     if(pid == 0){
-      int team = i % teams;
+      int team = team_assignments[i];
       setgid(team);
       for(;;){
         if(relay_winner() >= 0){
