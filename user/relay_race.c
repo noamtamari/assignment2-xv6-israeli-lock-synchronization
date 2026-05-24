@@ -27,6 +27,13 @@ usage(void)
 }
 
 int
+/*
+ * Run relay race simulation.
+ * Usage: relay_race [favoritism] [teams] [runners] [target]
+ * - No args: uses defaults (favoritism=50, teams=3, runners=5, target=30).
+ * - With args: provide 1 to 4 integers in order; each later value overrides
+ *   its default. All values must be positive, and favoritism is 0-100.
+ */
 main(int argc, char *argv[])
 {
   int favoritism = DEFAULT_FAVORITISM;
